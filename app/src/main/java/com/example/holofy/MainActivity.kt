@@ -14,11 +14,13 @@ class MainActivity : AppCompatActivity() {
     private var videoView: VideoView? = null
     private var arrayList: ArrayList<String> = ArrayList()
     private var index = 0
+    private var seekTo = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         videoView = findViewById(R.id.videoView)
         intent?.getStringExtra("URL")?.let { arrayList.add(it) }
+        seekTo = intent?.getIntExtra("duration", 0)!!
 
         val mediaController = MediaController(this)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -26,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         videoView?.setMediaController(mediaController)
         videoView?.setVideoURI(Uri.parse(arrayList[index]))
         videoView?.requestFocus()
+        videoView?.seekTo(seekTo)
         videoView?.start()
 
         videoView?.setOnCompletionListener { mp ->
@@ -40,5 +43,5 @@ class MainActivity : AppCompatActivity() {
 }
 
 interface ClickedVideo {
-    fun clickedVideoItem(videoPath: String)
+    fun clickedVideoItem(videoPath: String, currentPosition: Int?)
 }

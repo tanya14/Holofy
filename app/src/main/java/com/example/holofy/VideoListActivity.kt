@@ -29,9 +29,10 @@ class VideoListActivity : AppCompatActivity() {
         videoListRV?.setHasFixedSize(true)
         videoListRV?.layoutManager = LinearLayoutManager(this)
         videoListRV?.itemAnimator = DefaultItemAnimator()
-        videoListAdapter = VideoListAdapter(object: ClickedVideo {
-            override fun clickedVideoItem(videoPath: String) {
+        videoListAdapter = VideoListAdapter(object : ClickedVideo {
+            override fun clickedVideoItem(videoPath: String, currentPosition: Int?) {
                 val intent = Intent(this@VideoListActivity, MainActivity::class.java)
+                intent.putExtra("duration", currentPosition)
                 intent.putExtra("URL", videoPath)
                 startActivity(intent)
             }
@@ -70,25 +71,36 @@ class VideoListActivity : AppCompatActivity() {
         videoListRV?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 //super.onScrollStateChanged(recyclerView, newState)
+                try {
+                    if (newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+                        val positionView =
+                            ((videoListRV?.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() +
+                                    (videoListRV?.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()) / 2
+                        Log.i("ChangeT VISIBLE: ", positionView.toString())
+                        if (positionView >= 0) {
+                            if (previousView != null) {
+                                //Stop the previous video playback after new scroll
+                                val videoView =
+                                    (previousView as android.widget.VideoView).findViewById<android.widget.VideoView>(
+                                        R.id.videoViewItem
+                                    )
+                                videoView.stopPlayback()
+                            }
 
-                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-                    val positionView =
-                        ((videoListRV?.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() +
-                                (videoListRV?.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()) / 2
-                    Log.i("ChangeT VISIBLE: ", positionView.toString())
-                    if (positionView >= 0) {
-                        if (previousView != null) {
-                            //Stop the previous video playback after new scroll
+                            currentView =
+                                (videoListRV?.layoutManager as LinearLayoutManager).findViewByPosition(
+                                    positionView
+                                )
                             val videoView =
-                                (previousView as android.widget.VideoView).findViewById<android.widget.VideoView>(R.id.videoViewItem)
-                            videoView.stopPlayback()
+                                (currentView as android.widget.VideoView).findViewById<android.widget.VideoView>(
+                                    R.id.videoViewItem
+                                )
+                            videoView?.start()
+                            previousView = currentView
                         }
-
-                        currentView = (videoListRV?.layoutManager as LinearLayoutManager).findViewByPosition(positionView)
-                        val videoView = (currentView as android.widget.VideoView).findViewById<android.widget.VideoView>(R.id.videoViewItem)
-                        videoView?.start()
-                        previousView = currentView
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         })

@@ -31,6 +31,7 @@ class VideoListAdapter(val clickedVideo: ClickedVideo) : RecyclerView.Adapter<Da
             //itemView.videoViewItem?.setMediaController(mediaController)
             itemView.videoViewItem?.requestFocus()
             currentVideoView = itemView.videoViewItem
+            itemView.videoViewItem?.seekTo( 1 )
 
             itemView.videoViewItem?.isSoundEffectsEnabled = false
             if (count++ == 0)
@@ -44,7 +45,8 @@ class VideoListAdapter(val clickedVideo: ClickedVideo) : RecyclerView.Adapter<Da
             }*/
 
             itemView.setOnClickListener {
-                positionItem?.sources?.get(0)?.let { it1 -> clickedVideo.clickedVideoItem(it1) }
+
+                positionItem?.sources?.get(0)?.let { it1 -> clickedVideo.clickedVideoItem(it1, itemView.videoViewItem?.currentPosition) }
             }
 
             itemView.videoViewItem?.setOnCompletionListener { mp ->
