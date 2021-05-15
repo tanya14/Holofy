@@ -7,18 +7,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
+import android.widget.VideoView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.holofy.VideoListAdapter.DataViewHolder
 import kotlinx.android.synthetic.main.video_list_item.view.*
 
 
-class VideoListAdapter : RecyclerView.Adapter<DataViewHolder>() {
+class VideoListAdapter(val clickedVideo: ClickedVideo) : RecyclerView.Adapter<DataViewHolder>() {
 
     private var mainVideoList: MutableList<Video>? = mutableListOf()
     private var context: Context? = null
     private var mediaController: MediaController? = null
-    private var selectedMedicinesList: MutableList<Video>? = mutableListOf()
     private var count = 0
+    private var currentVideoView: VideoView?= null
+    private var currentItem: Int= 0
 
     inner class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(positionItem: Video?) {
@@ -27,15 +29,22 @@ class VideoListAdapter : RecyclerView.Adapter<DataViewHolder>() {
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             mediaController?.setAnchorView(itemView.videoViewItem)
             //itemView.videoViewItem?.setMediaController(mediaController)
-            //itemView.videoViewItem?.requestFocus()
-            itemView.videoViewItem?.isSoundEffectsEnabled = false
+            itemView.videoViewItem?.requestFocus()
+            currentVideoView = itemView.videoViewItem
 
+            itemView.videoViewItem?.isSoundEffectsEnabled = false
             if (count++ == 0)
+            itemView.videoViewItem?.start()
+            /*if (count++ == 0)
             itemView.videoViewItem?.start()
             if (itemView.videoViewItem?.isFocused == true) {
                 itemView.videoViewItem?.start()
             } else {
                 itemView.videoViewItem?.stopPlayback()
+            }*/
+
+            itemView.setOnClickListener {
+                positionItem?.sources?.get(0)?.let { it1 -> clickedVideo.clickedVideoItem(it1) }
             }
 
             itemView.videoViewItem?.setOnCompletionListener { mp ->
@@ -58,8 +67,10 @@ class VideoListAdapter : RecyclerView.Adapter<DataViewHolder>() {
 
     override fun getItemCount(): Int = mainVideoList?.size ?: 0
 
-    override fun onBindViewHolder(holder: DataViewHolder, position: Int) =
+    override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
+        currentItem = position
         holder.bind(mainVideoList?.get(position))
+    }
 
     fun addData(list: MutableList<Video>, context: Context, mediaController: MediaController) {
         mainVideoList?.addAll(list)
@@ -67,8 +78,10 @@ class VideoListAdapter : RecyclerView.Adapter<DataViewHolder>() {
         this.mediaController = mediaController
     }
 
-    fun getSelectedList(): MutableList<Video>? {
-        return selectedMedicinesList
+    fun getItemAtPosition(position: Int): VideoView? {
+        return if (currentItem == position)
+            currentVideoView
+        else null
     }
 }
 

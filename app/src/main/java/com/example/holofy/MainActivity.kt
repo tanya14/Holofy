@@ -12,17 +12,13 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
     private var videoView: VideoView? = null
-    private var arrayList: ArrayList<String> = ArrayList(
-        listOf(
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-        )
-    )
+    private var arrayList: ArrayList<String> = ArrayList()
     private var index = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         videoView = findViewById(R.id.videoView)
+        intent?.getStringExtra("URL")?.let { arrayList.add(it) }
 
         val mediaController = MediaController(this)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -34,18 +30,15 @@ class MainActivity : AppCompatActivity() {
 
         videoView?.setOnCompletionListener { mp ->
             Toast.makeText(applicationContext, "Video over", Toast.LENGTH_SHORT).show()
-            if (index++ >= arrayList.size) {
-                index = 0
-                mp.release()
-                Toast.makeText(applicationContext, "Video over", Toast.LENGTH_SHORT).show()
-            } else {
-                videoView?.setVideoURI(Uri.parse(arrayList[index]))
-                videoView?.start()
-            }
+            mp.release()
         }
         videoView?.setOnErrorListener { _, what, extra ->
             Log.d("API123", "What $what extra $extra")
             false
         }
     }
+}
+
+interface ClickedVideo {
+    fun clickedVideoItem(videoPath: String)
 }
